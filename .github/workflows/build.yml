@@ -1,0 +1,60 @@
+name: "Build and test rehashes"
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64
+          - aarch64
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build abi3 wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: auto
+          command: build
+          args: >
+            --release
+            --out dist
+      - name: Build source distribution
+        if: matrix.target == 'x86_64'
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-whl-${{ matrix.target }}
+          path: dist/*
+          retention-days: 30
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download x86_64 wheel artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: linux-whl-x86_64
+          path: dist
+      - name: Install ssdeep
+        run: sudo apt install -y ssdeep
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Install wheel and test dependencies
+        run: |
+          uv sync --dev
+          uv pip install dist/*.whl
+      - name: Run tests
+        run: uv run pytest

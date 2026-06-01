@@ -33,7 +33,7 @@ impl Hasher for PySha512 {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "rehashes")]
 #[derive(Default)]
 pub struct PySha512 {
     hasher: Sha512,

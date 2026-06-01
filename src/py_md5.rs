@@ -33,7 +33,7 @@ impl Hasher for PyMd5 {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "rehashes")]
 #[derive(Default)]
 pub struct PyMd5 {
     hasher: Md5,

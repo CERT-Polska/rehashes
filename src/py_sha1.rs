@@ -33,7 +33,7 @@ impl Hasher for PySha1 {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "rehashes")]
 #[derive(Default)]
 pub struct PySha1 {
     hasher: Sha1,

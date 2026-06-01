@@ -33,7 +33,7 @@ impl Hasher for PySha256 {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "rehashes")]
 #[derive(Default)]
 pub struct PySha256 {
     hasher: Sha256,

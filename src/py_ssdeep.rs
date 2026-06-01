@@ -32,7 +32,7 @@ impl Hasher for PySsdeep {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "rehashes")]
 #[derive(Default)]
 pub struct PySsdeep {
     hasher: Ssdeep,

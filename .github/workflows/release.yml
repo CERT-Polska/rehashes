@@ -1,0 +1,27 @@
+name: Release new rehashes version
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release_artifacts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+      - uses: nanoufo/action-upload-artifacts-and-release-assets@v2
+        with:
+          path: |
+            linux-whl-aarch64/*.whl
+            linux-whl-x86_64/*.whl
+            linux-whl-x86_64/*.tar.gz
+          upload-release-files: true
+          release-upload-url: ${{ github.event.release.upload_url }}

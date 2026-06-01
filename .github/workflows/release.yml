@@ -18,11 +18,22 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
+      - name: Collect into dist
+        run: |
+          mkdir dist
+          find . -type f \( -name "*.whl" -o -name "*.tar.gz" \) \
+            -exec cp {} dist/ \;
+          ls -lah dist
       - uses: nanoufo/action-upload-artifacts-and-release-assets@v2
         with:
           path: |
-            linux-whl-aarch64/*.whl
-            linux-whl-x86_64/*.whl
-            linux-whl-x86_64/*.tar.gz
+            dist/*.whl
+            dist/*.tar.gz
           upload-release-files: true
           release-upload-url: ${{ github.event.release.upload_url }}
+      - name: Publish to PyPi
+        uses: pypa/gh-action-pypi-publish@v1.14.0
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
+          packages-dir: dist/

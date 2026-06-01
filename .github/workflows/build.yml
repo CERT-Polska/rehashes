@@ -48,6 +48,8 @@ jobs:
         with:
           name: linux-whl-x86_64
           path: dist
+      - name: Install ssdeep
+        run: sudo apt install -y ssdeep
       - name: Install uv
         uses: astral-sh/setup-uv@v6
       - name: Install wheel and test dependencies

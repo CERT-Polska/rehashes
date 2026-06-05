@@ -244,3 +244,90 @@ impl Hasher {
         String::from_utf8(result).map_err(Error::InvalidHashString)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn update_increments_total_size() {
+        let mut h = Hasher::new();
+        let data = b"hello world";
+        h.update(data, data.len());
+        assert_eq!(h.total_size, data.len() as u32);
+    }
+
+    #[test]
+    fn update_accumulates_total_size() {
+        let mut h = Hasher::new();
+        h.update(b"hello", 5);
+        h.update(b"world", 5);
+        assert_eq!(h.total_size, 10);
+    }
+
+    #[test]
+    fn update_empty_does_not_change_size() {
+        let mut h = Hasher::new();
+        h.update(b"", 0);
+        assert_eq!(h.total_size, 0);
+    }
+
+    #[test]
+    fn serialize_deserialize_roundtrip_new() {
+        let h = Hasher::new();
+        let encoded = serde_cbor::to_vec(&h).expect("serialize failed");
+        let decoded: Hasher = serde_cbor::from_slice(&encoded).expect("deserialize failed");
+        assert_eq!(h.total_size, decoded.total_size);
+        assert_eq!(h.bh_start, decoded.bh_start);
+        assert_eq!(h.bh_end, decoded.bh_end);
+    }
+
+    #[test]
+    fn serialize_deserialize_roundtrip_after_update() {
+        let mut h = Hasher::new();
+        h.update(b"the quick brown fox", 19);
+        let encoded = serde_cbor::to_vec(&h).expect("serialize failed");
+        let decoded: Hasher = serde_cbor::from_slice(&encoded).expect("deserialize failed");
+        assert_eq!(h.total_size, decoded.total_size);
+        assert_eq!(h.bh_start, decoded.bh_start);
+        assert_eq!(h.bh_end, decoded.bh_end);
+        assert_eq!(h.bh[0].h, decoded.bh[0].h);
+        assert_eq!(h.bh[0].half_h, decoded.bh[0].half_h);
+        assert_eq!(h.bh[0].d_len, decoded.bh[0].d_len);
+    }
+
+    #[test]
+    fn digest_hello_world() {
+        let input = b"Hello, world!";
+        let mut h = Hasher::new();
+        h.update(input, input.len());
+        let result = h.digest(constants::Modes::None).expect("digest failed");
+        assert_eq!(result, "3:a6/E:asE");
+    }
+
+    #[test]
+    fn digest_hello_world_serialized_between_updates() {
+        let mut h = Hasher::new();
+        h.update(b"Hello, ", 7);
+        let encoded = serde_cbor::to_vec(&h).expect("serialize failed");
+        let mut h: Hasher = serde_cbor::from_slice(&encoded).expect("deserialize failed");
+        h.update(b"world!", 6);
+        let result = h.digest(constants::Modes::None).expect("digest failed");
+        assert_eq!(result, "3:a6/E:asE");
+    }
+
+    #[test]
+    fn deserialize_then_continue_update_matches_original() {
+        let mut h1 = Hasher::new();
+        h1.update(b"first chunk", 11);
+
+        let encoded = serde_cbor::to_vec(&h1).expect("serialize failed");
+        let mut h2: Hasher = serde_cbor::from_slice(&encoded).expect("deserialize failed");
+
+        h1.update(b"second chunk", 12);
+        h2.update(b"second chunk", 12);
+
+        assert_eq!(h1.total_size, h2.total_size);
+        assert_eq!(h1.bh[0].h, h2.bh[0].h);
+    }
+}

@@ -38,6 +38,13 @@ jobs:
           name: linux-whl-${{ matrix.target }}
           path: dist/*
           retention-days: 30
+  rust-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run Rust tests
+        run: cargo test
   test:
     needs: build
     runs-on: ubuntu-latest

@@ -15,6 +15,8 @@ jobs:
         target:
           - x86_64
           - aarch64
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
     steps:
       - uses: actions/checkout@v6
       - name: Build abi3 wheels

@@ -56,8 +56,8 @@ impl Hasher {
             return;
         }
 
-        if ((u64::from(constants::MIN_BLOCK_SIZE) << self.bh_start) * u64::from(constants::SPAM_SUM_LENGTH)
-            >= self.total_size)
+        if (u64::from(constants::MIN_BLOCK_SIZE) << self.bh_start) * u64::from(constants::SPAM_SUM_LENGTH)
+            >= self.total_size
         {
             return;
         }
@@ -116,7 +116,7 @@ impl Hasher {
         let mut bi = self.bh_start;
         let mut h = self.roll.sum();
 
-        while ((u64::from(constants::MIN_BLOCK_SIZE) << bi) * u64::from(constants::SPAM_SUM_LENGTH) < self.total_size) {
+        while (u64::from(constants::MIN_BLOCK_SIZE) << bi) * u64::from(constants::SPAM_SUM_LENGTH) < self.total_size {
             bi += 1;
             if bi >= constants::NUM_BLOCKHASHES {
                 return Err(Error::TooManyBlocks);
@@ -254,7 +254,7 @@ mod tests {
         let mut h = Hasher::new();
         let data = b"hello world";
         h.update(data, data.len());
-        assert_eq!(h.total_size, data.len() as u32);
+        assert_eq!(h.total_size, data.len() as u64);
     }
 
     #[test]

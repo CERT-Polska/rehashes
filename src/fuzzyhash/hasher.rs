@@ -8,7 +8,7 @@ pub struct Hasher {
     bh_start: u32,
     bh_end: u32,
     bh: Vec<blockhash::Context>,
-    total_size: u32,
+    total_size: u64,
     roll: roll::Roll,
 }
 
@@ -56,8 +56,8 @@ impl Hasher {
             return;
         }
 
-        if (constants::MIN_BLOCK_SIZE << self.bh_start) * constants::SPAM_SUM_LENGTH
-            >= self.total_size
+        if ((u64::from(constants::MIN_BLOCK_SIZE) << self.bh_start) * u64::from(constants::SPAM_SUM_LENGTH)
+            >= self.total_size)
         {
             return;
         }
@@ -102,7 +102,7 @@ impl Hasher {
 
     /// Add data to the `Hasher`.
     pub fn update(&mut self, buffer: &[u8], len: usize) {
-        self.total_size += len as u32;
+        self.total_size += len as u64;
         for item in buffer.iter().take(len) {
             self.engine_step(*item);
         }
@@ -116,7 +116,7 @@ impl Hasher {
         let mut bi = self.bh_start;
         let mut h = self.roll.sum();
 
-        while (constants::MIN_BLOCK_SIZE << bi) * constants::SPAM_SUM_LENGTH < self.total_size {
+        while ((u64::from(constants::MIN_BLOCK_SIZE) << bi) * u64::from(constants::SPAM_SUM_LENGTH) < self.total_size) {
             bi += 1;
             if bi >= constants::NUM_BLOCKHASHES {
                 return Err(Error::TooManyBlocks);

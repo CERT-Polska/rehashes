@@ -8,7 +8,7 @@ description = """\
     Provides Python hashers (MD5, SHA-1, SHA-2, ssdeep) with serializable internal state that can be \
     persisted and recovered to continue hashing in another context.\
 """
-version = "0.2.0"
+version = "0.3.0"
 requires-python = ">=3.10"
 readme = "README.md"
 license = "BSD-3-Clause"

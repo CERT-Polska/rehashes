@@ -159,6 +159,7 @@ def test_invalid_serialization_data(algo_name: str, tested_impl: Callable, refer
     with pytest.raises(Exception):
         tested_impl.deserialize(empty_data)
 
+@pytest.mark.slow
 def test_ssdeep_huge_data():
     tested_hasher = PySsdeep()
     reference_hasher = SsdeepHasher()

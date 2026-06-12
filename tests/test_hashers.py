@@ -158,3 +158,19 @@ def test_invalid_serialization_data(algo_name: str, tested_impl: Callable, refer
     
     with pytest.raises(Exception):
         tested_impl.deserialize(empty_data)
+
+@pytest.mark.slow
+def test_ssdeep_huge_data():
+    tested_hasher = PySsdeep()
+    reference_hasher = SsdeepHasher()
+    chunk_size = 128 * 1024 * 1024
+    chunk_part = bytes([i for i in range(256)])
+    for i in range(64):
+        chunk = chunk_part * (chunk_size // len(chunk_part))
+        tested_hasher.update(chunk)
+        reference_hasher.update(chunk)
+
+    tested_result = tested_hasher.finalize()
+    reference_result = reference_hasher.hexdigest()
+
+    assert tested_result == reference_result
